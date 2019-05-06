@@ -1069,19 +1069,25 @@ mono_unity_install_unitytls_interface (unitytls_interface_struct *callbacks)
 }
 
 //gc memory
+
+static void
+HandleHeapSection (void *userdata, gpointer start, gpointer end)
+{
+	(*(GFunc *)userdata) (start, end);
+}
+
 MONO_API void
-mono_unity_gc_heap_foreach (void *userdata, GFunc callback)
+mono_unity_gc_heap_foreach (GFunc callback)
 {
 	//TODO: Continue investigation as to why we very rarely crash when merging blocks during the execution of this method
 	//either fix behavior later on, or add new implementation here, if behavior modification is not possible.
-	GC_foreach_heap_section (userdata, callback);
+	GC_foreach_heap_section (&callback, HandleHeapSection);
 }
 
 static void
 HandleProcessing (gpointer data, gpointer handleReportCallback)
 {
 	uint32_t handleType = MONO_GC_HANDLE_TYPE (*(uint32_t *)data);
-
 	(*(GFunc *)handleReportCallback) (data, &handleType);
 }
 
