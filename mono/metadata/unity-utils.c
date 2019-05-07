@@ -15,6 +15,7 @@
 #endif
 #include <mono/metadata/class-internals.h>
 #include <mono/metadata/exception.h>
+#include <mono/metadata/gc-internals.h>
 #include <mono/metadata/marshal.h>
 #include <mono/metadata/metadata-internals.h>
 #include <mono/metadata/metadata.h>
@@ -28,8 +29,6 @@
 #include <mono/metadata/threads.h>
 #include <mono/metadata/tokentype.h>
 #include <mono/utils/mono-string.h>
-#include <mono/metadata/gc-internals.h>
-
 
 #if HAVE_BDWGC_GC
 #include <mono/utils/gc_wrapper.h>
@@ -966,7 +965,19 @@ mono_unity_get_unitytls_interface ()
 static void
 ReportMemPoolChunk (gpointer *chunkStart, gpointer *chunkEnd, gpointer *userData)
 {
-	(*(GFunc*)userData) (chunkStart, chunkEnd);
+	(*(GFunc *)userData) (chunkStart, chunkEnd);
+}
+
+static void
+HandleImageSetMemPool (MonoImageSet *imageSet, void *user_data)
+{
+	mono_mempool_foreach_block (imageSet->mempool, ReportMemPoolChunk, &user_data);
+}
+
+MONO_API void
+mono_unity_image_set_mempool_foreach (GFunc callback)
+{
+	mono_metadata_image_set_foreach (HandleImageSetMemPool, &callback);
 }
 
 MONO_API void
