@@ -1080,7 +1080,6 @@ mono_unity_install_unitytls_interface (unitytls_interface_struct *callbacks)
 }
 
 //gc memory
-
 static void
 HandleHeapSection (void *userdata, gpointer start, gpointer end)
 {
