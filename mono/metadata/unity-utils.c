@@ -1097,17 +1097,18 @@ mono_unity_gc_heap_foreach (GFunc callback)
 static void
 HandleProcessing (gpointer data, gpointer handleReportCallback)
 {
-	uint32_t handleType = MONO_GC_HANDLE_TYPE (*(uint32_t *)data);
-	(*(GFunc *)handleReportCallback) (data, &handleType);
+	typedef void (*handleFunc) (void *);
+	(*(handleFunc*)handleReportCallback) (data);
 }
 
 MONO_API void
-mono_unity_gc_handles_foreach (GFunc callback)
+mono_unity_gc_handles_foreach_get_target (void (*func) (void *))
 {
-	mono_gc_strong_handle_foreach (HandleProcessing, &callback);
+	mono_gc_strong_handle_foreach (HandleProcessing, &func);
 }
 
 // vm runtime info
+
 MONO_API uint32_t
 mono_unity_object_header_size ()
 {
@@ -1121,7 +1122,13 @@ mono_unity_array_object_header_size ()
 }
 
 MONO_API uint32_t
-mono_unity_bounds_offset_in_array_object_header ()
+mono_unity_offset_of_array_length_in_array_object_header ()
+{
+	return offsetof (MonoArray, max_length);
+}
+
+MONO_API uint32_t
+mono_unity_offset_of_array_bounds_in_array_object_header ()
 {
 	return offsetof (MonoArray, bounds);
 }
